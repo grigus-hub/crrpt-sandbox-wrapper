@@ -2,12 +2,17 @@
   "version": 2,
   "configurePresets": [
     {
+      "hidden": true,
       "name": "vcpkg",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
+    },
+    {
+      "inherits": "vcpkg",
+      "name": "ci"
     }
   ]
 }

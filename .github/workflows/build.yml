@@ -1,0 +1,74 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    name: Build DLL and create release
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install vcpkg packages
+        run: |
+          vcpkg integrate install
+          vcpkg install --clean-after-build --x-manifest-root=${{ github.workspace }}
+
+      - name: Configure CMake
+        run: cmake --preset ci -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Build project
+        run: cmake --build build
+
+      - name: Collect DLLs
+        shell: cmd
+        run: |
+          mkdir dist
+          if exist build\build\corruptjpeg.dll copy build\build\corruptjpeg.dll dist\
+          if exist build\build\jpeg62.dll copy build\build\jpeg62.dll dist\
+          dir dist
+
+      - name: Determine release tag
+        id: version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Rename main DLL to include version
+        shell: bash
+        run: |
+          cd dist
+          for f in *.dll; do
+            mv "$f" "${f%.dll}_${{ steps.version.outputs.tag }}.dll"
+          done
+          ls -lh
+
+      - name: Create or update GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          files: dist/*.dll
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
