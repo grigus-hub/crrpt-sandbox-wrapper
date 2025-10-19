@@ -56,6 +56,8 @@ extern "C" {
 		const float* in_block, size_t in_len
 	);
 
+	CORRUPTJPEG_API int jpeg_save(JpegHandle* h, const char* out_path, int quality);
+
 #ifdef __cplusplus
 }
 #endif

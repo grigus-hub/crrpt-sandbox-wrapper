@@ -4,6 +4,7 @@
 
 struct JpegHandle {
 	struct jpeg_decompress_struct dinfo;
+    struct jpeg_compress_struct cinfo;
 	struct jpeg_error_mgr jerr;
 	jvirt_barray_ptr* coef_arrays;
 	FILE* infile;
@@ -112,4 +113,22 @@ CORRUPTJPEG_API int jpeg_set_dct_block(JpegHandle* h, int channel, int bx, int b
         }
     }
     return JPEG_DCT_BLOCK_SIZE;
+}
+
+CORRUPTJPEG_API int jpeg_save(JpegHandle* h, const char* out_path, int quality) {
+    if (!h || !out_path) return JPEG_API_ERR_INVALID_PARAM;
+    FILE* out = fopen(out_path, "wb");
+    if (!out) return JPEG_API_ERR_IO;
+
+    struct jpeg_compress_struct cinfo;
+    struct jpeg_error_mgr jerr;
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_compress(&cinfo);
+    jpeg_stdio_dest(&cinfo, out);
+    jpeg_copy_critical_parameters(&h->dinfo, &cinfo);
+    jpeg_write_coefficients(&cinfo, h->coef_arrays);
+    jpeg_finish_compress(&cinfo);
+    jpeg_destroy_compress(&cinfo);
+    fclose(out);
+    return JPEG_API_OK;
 }

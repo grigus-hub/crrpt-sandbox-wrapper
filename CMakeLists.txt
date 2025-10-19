@@ -4,7 +4,6 @@ project(CorruptJPEG C)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# libjpeg
 find_package(JPEG REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/include ${JPEG_INCLUDE_DIR})
