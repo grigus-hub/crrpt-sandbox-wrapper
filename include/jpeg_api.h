@@ -41,6 +41,10 @@ extern "C" {
 	CORRUPTJPEG_API int jpeg_get_height(const JpegHandle* h);
 	CORRUPTJPEG_API int jpeg_get_num_components(const JpegHandle* h);
 
+	// --- Blocks in component ---
+	CORRUPTJPEG_API int jpeg_get_num_blocks_x(JpegHandle* handle, int component);
+	CORRUPTJPEG_API int jpeg_get_num_blocks_y(JpegHandle* handle, int component);
+
 	// --- DCT coeffs ---
 	CORRUPTJPEG_API int jpeg_get_dct_block(
 		const JpegHandle* h, int channel, int block_x, int block_y,

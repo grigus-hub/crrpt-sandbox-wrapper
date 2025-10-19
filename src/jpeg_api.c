@@ -50,6 +50,22 @@ CORRUPTJPEG_API int jpeg_get_num_components(const JpegHandle* h) {
 	return h ? h->num_components : 0;
 }
 
+int jpeg_get_num_blocks_x(JpegHandle* h, int component) {
+    if (!h || component < 0 || component >= h->dinfo.num_components)
+        return JPEG_API_ERR_LIBJPEG;
+
+    jpeg_component_info* comp = &h->dinfo.comp_info[component];
+    return (int)comp->width_in_blocks;
+}
+
+int jpeg_get_num_blocks_y(JpegHandle* h, int component) {
+    if (!h || component < 0 || component >= h->dinfo.num_components)
+        return JPEG_API_ERR_LIBJPEG;
+
+    jpeg_component_info* comp = &h->dinfo.comp_info[component];
+    return (int)comp->height_in_blocks;
+}
+
 static inline short clamp_coef(int v) {
     if (v < -1024) v = -1024;
     if (v > 1023) v = 1023;
