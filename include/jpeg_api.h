@@ -7,26 +7,32 @@
 
 #ifdef _WIN32
 #ifdef CORRUPTJPEG_EXPORTS
-#define CORRUPTJPEG_API extern "C" __declspec(dllexport)
+#define CORRUPTJPEG_API __declspec(dllexport)
 #else
-#define CORRUPTJPEG_API extern "C" __declspec(dllimport)
+#define CORRUPTJPEG_API __declspec(dllimport)
 #endif
 #else
-#define CORRUPTJPEG_API extern "C"
+#define CORRUPTJPEG_API
 #endif
 
-// Handler to an opened JPEG file
-typedef struct JpegHandle JpegHandle;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// Errors
-enum {
-	JPEG_API_OK = 0,
-	JPEG_API_ERR_IO = -1,
-	JPEG_API_ERR_LIBJPEG = -2
-};
+	// --- declarations ---
+	typedef struct JpegHandle JpegHandle;
 
-// Lifecycle
-CORRUPTJPEG_API JpegHandle* jpeg_open(const char* path);
-CORRUPTJPEG_API void jpeg_close(JpegHandle* handle);
+	enum {
+		JPEG_API_OK = 0,
+		JPEG_API_ERR_IO = -1,
+		JPEG_API_ERR_LIBJPEG = -2
+	};
+
+	CORRUPTJPEG_API JpegHandle* jpeg_open(const char* path);
+	CORRUPTJPEG_API void jpeg_close(JpegHandle* handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

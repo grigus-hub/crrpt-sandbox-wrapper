@@ -10,7 +10,7 @@ struct JpegHandle {
 	int width, height, num_components;
 };
 
-JpegHandle* jpeg_open(const char* path) {
+CORRUPTJPEG_API JpegHandle* jpeg_open(const char* path) {
 	if (!path) return NULL;
 	FILE* f = fopen(path, "rb");
 	if (!f) return NULL;
@@ -31,7 +31,7 @@ JpegHandle* jpeg_open(const char* path) {
 	return h;
 }
 
-void jpeg_close(JpegHandle* h) {
+CORRUPTJPEG_API void jpeg_close(JpegHandle* h) {
 	if (!h) return;
 	jpeg_destroy_decompress(&h->dinfo);
 	if (h->infile) fclose(h->infile);
