@@ -10,6 +10,7 @@ find_package(JPEG REQUIRED)
 include_directories(${CMAKE_SOURCE_DIR}/include ${JPEG_INCLUDE_DIR})
 
 add_library(corruptjpeg SHARED src/jpeg_api.c)
+target_compile_definitions(corruptjpeg PRIVATE CORRUPTME_JPEG_API_EXPORTS)
 target_link_libraries(corruptjpeg PUBLIC JPEG::JPEG)
 
 if(WIN32)

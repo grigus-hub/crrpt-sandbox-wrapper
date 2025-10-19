@@ -35,39 +35,27 @@ jobs:
       - name: Build project
         run: cmake --build build
 
-      - name: Collect DLLs
-        shell: cmd
+      - name: Prepare artifacts
         run: |
           mkdir dist
-          if exist build\build\corruptjpeg.dll copy build\build\corruptjpeg.dll dist\
-          if exist build\build\jpeg62.dll copy build\build\jpeg62.dll dist\
-          dir dist
+          copy build\build\corruptjpeg.dll dist\corruptjpeg_latest.dll
+          copy build\build\jpeg62.dll dist\jpeg62.dll
 
-      - name: Determine release tag
-        id: version
-        shell: bash
-        run: |
-          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
-          else
-            echo "tag=latest" >> $GITHUB_OUTPUT
-          fi
+      - name: Delete previous 'latest' release (if exists)
+        uses: dev-drprasad/delete-tag-and-release@v1.1
+        with:
+          tag_name: latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Rename main DLL to include version
-        shell: bash
-        run: |
-          cd dist
-          for f in *.dll; do
-            mv "$f" "${f%.dll}_${{ steps.version.outputs.tag }}.dll"
-          done
-          ls -lh
-
-      - name: Create or update GitHub release
+      - name: Create / update 'latest' release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: ${{ steps.version.outputs.tag }}
-          files: dist/*.dll
+          tag_name: latest
+          name: Latest Build
+          files: |
+            dist/corruptjpeg_latest.dll
+            dist/jpeg62.dll
           draft: false
           prerelease: false
         env:
