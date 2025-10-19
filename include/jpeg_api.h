@@ -19,13 +19,17 @@
 extern "C" {
 #endif
 
+#define JPEG_DCT_BLOCK_SIZE 64
+
 	typedef struct JpegHandle JpegHandle;
 
 	// --- Error codes ---
 	enum {
 		JPEG_API_OK = 0,
 		JPEG_API_ERR_IO = -1,
-		JPEG_API_ERR_LIBJPEG = -2
+		JPEG_API_ERR_LIBJPEG = -2,
+		JPEG_API_ERR_INVALID_PARAM = -3,
+		JPEG_API_ERR_NOT_LOADED = -4
 	};
 
 	// --- Lifecycle ---
@@ -36,6 +40,17 @@ extern "C" {
 	CORRUPTJPEG_API int jpeg_get_width(const JpegHandle* h);
 	CORRUPTJPEG_API int jpeg_get_height(const JpegHandle* h);
 	CORRUPTJPEG_API int jpeg_get_num_components(const JpegHandle* h);
+
+	// --- DCT coeffs ---
+	CORRUPTJPEG_API int jpeg_get_dct_block(
+		const JpegHandle* h, int channel, int block_x, int block_y,
+		float* out_block, size_t out_len
+	);
+
+	CORRUPTJPEG_API int jpeg_set_dct_block(
+		JpegHandle* h, int channel, int block_x, int block_y,
+		const float* in_block, size_t in_len
+	);
 
 #ifdef __cplusplus
 }
