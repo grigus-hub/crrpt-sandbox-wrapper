@@ -37,3 +37,15 @@ CORRUPTJPEG_API void jpeg_close(JpegHandle* h) {
 	if (h->infile) fclose(h->infile);
 	free(h);
 }
+
+CORRUPTJPEG_API int jpeg_get_width(const JpegHandle* h) {
+	return h ? h->width : 0;
+}
+
+CORRUPTJPEG_API int jpeg_get_height(const JpegHandle* h) {
+	return h ? h->height : 0;
+}
+
+CORRUPTJPEG_API int jpeg_get_num_components(const JpegHandle* h) {
+	return h ? h->num_components : 0;
+}
