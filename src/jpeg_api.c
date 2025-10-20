@@ -4,7 +4,7 @@
 
 struct JpegHandle {
 	struct jpeg_decompress_struct dinfo;
-    struct jpeg_compress_struct cinfo;
+	struct jpeg_compress_struct cinfo;
 	struct jpeg_error_mgr jerr;
 	jvirt_barray_ptr* coef_arrays;
 	FILE* infile;
@@ -52,83 +52,109 @@ CORRUPTJPEG_API int jpeg_get_num_components(const JpegHandle* h) {
 }
 
 int jpeg_get_num_blocks_x(JpegHandle* h, int component) {
-    if (!h || component < 0 || component >= h->dinfo.num_components)
-        return JPEG_API_ERR_LIBJPEG;
+	if (!h || component < 0 || component >= h->dinfo.num_components)
+		return JPEG_API_ERR_LIBJPEG;
 
-    jpeg_component_info* comp = &h->dinfo.comp_info[component];
-    return (int)comp->width_in_blocks;
+	jpeg_component_info* comp = &h->dinfo.comp_info[component];
+	return (int)comp->width_in_blocks;
 }
 
 int jpeg_get_num_blocks_y(JpegHandle* h, int component) {
-    if (!h || component < 0 || component >= h->dinfo.num_components)
-        return JPEG_API_ERR_LIBJPEG;
+	if (!h || component < 0 || component >= h->dinfo.num_components)
+		return JPEG_API_ERR_LIBJPEG;
 
-    jpeg_component_info* comp = &h->dinfo.comp_info[component];
-    return (int)comp->height_in_blocks;
+	jpeg_component_info* comp = &h->dinfo.comp_info[component];
+	return (int)comp->height_in_blocks;
 }
 
 static inline short clamp_coef(int v) {
-    if (v < -1024) v = -1024;
-    if (v > 1023) v = 1023;
-    return (short)v;
+	if (v < -1024) v = -1024;
+	if (v > 1023) v = 1023;
+	return (short)v;
 }
 
 CORRUPTJPEG_API int jpeg_get_dct_block(const JpegHandle* h, int channel, int bx, int by,
-    float* out_block, size_t out_len)
+	float* out_block, size_t out_len)
 {
-    if (!h || !out_block || out_len < 64) return JPEG_API_ERR_INVALID_PARAM;
-    if (channel < 0 || channel >= h->num_components) return JPEG_API_ERR_INVALID_PARAM;
+	if (!h || !out_block || out_len < 64) return JPEG_API_ERR_INVALID_PARAM;
+	if (channel < 0 || channel >= h->num_components) return JPEG_API_ERR_INVALID_PARAM;
 
-    jpeg_component_info* comp = &h->dinfo.comp_info[channel];
-    if (bx < 0 || bx >= comp->width_in_blocks || by < 0 || by >= comp->height_in_blocks)
-        return JPEG_API_ERR_INVALID_PARAM;
+	jpeg_component_info* comp = &h->dinfo.comp_info[channel];
+	if (bx < 0 || bx >= comp->width_in_blocks || by < 0 || by >= comp->height_in_blocks)
+		return JPEG_API_ERR_INVALID_PARAM;
 
-    JBLOCKARRAY buffer = h->dinfo.mem->access_virt_barray(
-        (j_common_ptr)&h->dinfo, h->coef_arrays[channel], by, 1, FALSE);
+	JBLOCKARRAY buffer = h->dinfo.mem->access_virt_barray(
+		(j_common_ptr)&h->dinfo, h->coef_arrays[channel], by, 1, FALSE);
 
-    for (int i = 0; i < 8; ++i) {
-        for (int j = 0; j < 8; ++j) {
-            out_block[i * 8 + j] = (float)buffer[0][bx][i * 8 + j];
-        }
-    }
-    return JPEG_DCT_BLOCK_SIZE;
+	for (int i = 0; i < 8; ++i) {
+		for (int j = 0; j < 8; ++j) {
+			out_block[i * 8 + j] = (float)buffer[0][bx][i * 8 + j];
+		}
+	}
+	return JPEG_DCT_BLOCK_SIZE;
 }
 
 CORRUPTJPEG_API int jpeg_set_dct_block(JpegHandle* h, int channel, int bx, int by,
-    const float* in_block, size_t in_len)
+	const float* in_block, size_t in_len)
 {
-    if (!h || !in_block || in_len < 64) return JPEG_API_ERR_INVALID_PARAM;
-    if (channel < 0 || channel >= h->num_components) return JPEG_API_ERR_INVALID_PARAM;
+	if (!h || !in_block || in_len < 64) return JPEG_API_ERR_INVALID_PARAM;
+	if (channel < 0 || channel >= h->num_components) return JPEG_API_ERR_INVALID_PARAM;
 
-    jpeg_component_info* comp = &h->dinfo.comp_info[channel];
-    if (bx < 0 || bx >= comp->width_in_blocks || by < 0 || by >= comp->height_in_blocks)
-        return JPEG_API_ERR_INVALID_PARAM;
+	jpeg_component_info* comp = &h->dinfo.comp_info[channel];
+	if (bx < 0 || bx >= comp->width_in_blocks || by < 0 || by >= comp->height_in_blocks)
+		return JPEG_API_ERR_INVALID_PARAM;
 
-    JBLOCKARRAY buffer = h->dinfo.mem->access_virt_barray(
-        (j_common_ptr)&h->dinfo, h->coef_arrays[channel], by, 1, TRUE);
+	JBLOCKARRAY buffer = h->dinfo.mem->access_virt_barray(
+		(j_common_ptr)&h->dinfo, h->coef_arrays[channel], by, 1, TRUE);
 
-    for (int i = 0; i < 8; ++i) {
-        for (int j = 0; j < 8; ++j) {
-            buffer[0][bx][i * 8 + j] = clamp_coef((int)in_block[i * 8 + j]);
-        }
-    }
-    return JPEG_DCT_BLOCK_SIZE;
+	for (int i = 0; i < 8; ++i) {
+		for (int j = 0; j < 8; ++j) {
+			buffer[0][bx][i * 8 + j] = clamp_coef((int)in_block[i * 8 + j]);
+		}
+	}
+	return JPEG_DCT_BLOCK_SIZE;
+}
+
+CORRUPTJPEG_API int jpeg_get_quant_table(
+	const JpegHandle* h, int channel, uint16_t* out_table, size_t len) {
+	if (!h || !out_table || len < 64) return JPEG_API_ERR_INVALID_PARAM;
+	if (channel < 0 || channel >= h->num_components) return JPEG_API_ERR_INVALID_PARAM;
+
+	JQUANT_TBL* tbl = h->dinfo.quant_tbl_ptrs[channel];
+	if (!tbl) return JPEG_API_ERR_LIBJPEG;
+
+	for (int i = 0; i < 64; ++i)
+		out_table[i] = tbl->quantval[i];
+	return 64;
+}
+
+CORRUPTJPEG_API int jpeg_set_quant_table(
+	JpegHandle* h, int channel, const uint16_t* in_table, size_t len) {
+	if (!h || !in_table || len < 64) return JPEG_API_ERR_INVALID_PARAM;
+	if (channel < 0 || channel >= h->num_components) return JPEG_API_ERR_INVALID_PARAM;
+
+	JQUANT_TBL* tbl = h->dinfo.quant_tbl_ptrs[channel];
+	if (!tbl) return JPEG_API_ERR_LIBJPEG;
+
+	for (int i = 0; i < 64; ++i)
+		tbl->quantval[i] = (UINT16)in_table[i];
+	return 64;
 }
 
 CORRUPTJPEG_API int jpeg_save(JpegHandle* h, const char* out_path, int quality) {
-    if (!h || !out_path) return JPEG_API_ERR_INVALID_PARAM;
-    FILE* out = fopen(out_path, "wb");
-    if (!out) return JPEG_API_ERR_IO;
+	if (!h || !out_path) return JPEG_API_ERR_INVALID_PARAM;
+	FILE* out = fopen(out_path, "wb");
+	if (!out) return JPEG_API_ERR_IO;
 
-    struct jpeg_compress_struct cinfo;
-    struct jpeg_error_mgr jerr;
-    cinfo.err = jpeg_std_error(&jerr);
-    jpeg_create_compress(&cinfo);
-    jpeg_stdio_dest(&cinfo, out);
-    jpeg_copy_critical_parameters(&h->dinfo, &cinfo);
-    jpeg_write_coefficients(&cinfo, h->coef_arrays);
-    jpeg_finish_compress(&cinfo);
-    jpeg_destroy_compress(&cinfo);
-    fclose(out);
-    return JPEG_API_OK;
+	struct jpeg_compress_struct cinfo;
+	struct jpeg_error_mgr jerr;
+	cinfo.err = jpeg_std_error(&jerr);
+	jpeg_create_compress(&cinfo);
+	jpeg_stdio_dest(&cinfo, out);
+	jpeg_copy_critical_parameters(&h->dinfo, &cinfo);
+	jpeg_write_coefficients(&cinfo, h->coef_arrays);
+	jpeg_finish_compress(&cinfo);
+	jpeg_destroy_compress(&cinfo);
+	fclose(out);
+	return JPEG_API_OK;
 }

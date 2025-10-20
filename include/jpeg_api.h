@@ -56,6 +56,14 @@ extern "C" {
 		const float* in_block, size_t in_len
 	);
 
+	CORRUPTJPEG_API int jpeg_get_quant_table(
+		const JpegHandle* h, int channel, uint16_t* out_table, size_t len
+	);
+
+	CORRUPTJPEG_API int jpeg_set_quant_table(
+		JpegHandle* h, int channel, const uint16_t* in_table, size_t len
+	);
+
 	CORRUPTJPEG_API int jpeg_save(JpegHandle* h, const char* out_path, int quality);
 
 #ifdef __cplusplus
